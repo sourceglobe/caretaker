@@ -1,0 +1,28 @@
+{
+  "name": "netlify-github-webhook",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "smee": "node smee.js",
+    "dev": "netlify dev",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/robvanderleek/netlify-github-webhook.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/robvanderleek/netlify-github-webhook/issues"
+  },
+  "homepage": "https://github.com/robvanderleek/netlify-github-webhook#readme",
+  "devDependencies": {
+    "smee-client": "^1.2.3"
+  },
+  "dependencies": {
+    "@octokit/rest": "^19.0.5",
+    "octokit": "^2.0.9"
+  }
+}
