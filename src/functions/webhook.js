@@ -1,9 +1,7 @@
 const {Octokit} = require("@octokit/rest");
 const {logger} = require("../logger");
 const {has_starred_repo, contains_no_file_outside_user_home} = require("../checks");
-
-const OWNER = 'sourceglobe';
-const REPO = 'sourceglobe.github.io';
+const {OWNER, REPO} = require("../constants");
 
 const handler = async (event, context) => {
     const method = event.httpMethod;
@@ -44,7 +42,7 @@ async function add_comment(octokit, pull_number, comment) {
 }
 
 module.exports = {
-    OWNER,
-    REPO,
-    handler
+    OWNER: 'hello',
+    REPO: REPO,
+    handler: handler
 }

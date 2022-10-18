@@ -1,6 +1,8 @@
-const {OWNER, REPO} = require("./functions/webhook");
+const {OWNER, REPO} = require("./constants");
 
 async function has_starred_repo(octokit, user) {
+    console.log(REPO);
+    console.log(OWNER);
     const {data: stargazers} = await octokit.rest.activity.listStargazersForRepo({
         owner: OWNER,
         repo: REPO,
@@ -19,6 +21,6 @@ async function contains_no_file_outside_user_home(octokit, user, pull_number) {
 }
 
 module.exports = {
-    has_starred_repo,
-    contains_no_file_outside_user_home
+    has_starred_repo: has_starred_repo,
+    contains_no_file_outside_user_home: contains_no_file_outside_user_home
 }
