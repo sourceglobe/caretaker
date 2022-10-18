@@ -1,3 +1,4 @@
+require('dotenv').config()
 const SmeeClient = require('smee-client')
 
 const smee = new SmeeClient({
