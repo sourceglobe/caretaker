@@ -1,8 +1,6 @@
 const {OWNER, REPO} = require("./constants");
 
 async function has_starred_repo(octokit, user) {
-    console.log(REPO);
-    console.log(OWNER);
     const {data: stargazers} = await octokit.rest.activity.listStargazersForRepo({
         owner: OWNER,
         repo: REPO,
