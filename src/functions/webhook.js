@@ -2,28 +2,31 @@ const {Octokit} = require("@octokit/rest");
 const {logger} = require("../logger");
 const {has_starred_repo, contains_no_file_outside_user_home, below_max_size_and_file_count} = require("../checks");
 const {add_comment, merge_pull_request, update_stats_gist, close_pull_request} = require("../github");
+const crypto = require("crypto");
 
 const handler = async (event, _) => {
-    const method = event.httpMethod;
-    if (method !== 'POST') {
-        return {statusCode: 403}
+    if (!checkSecret(event)) {
+        logger.warn('Payload digest is invalid!');
+        return {statusCode: 401};
+    }
+    if (!checkMethod(event)) {
+        return {statusCode: 403};
     }
     const payload = JSON.parse(event.body);
-    const action = payload.action;
-    if (action !== 'opened' && action !== 'reopened') {
-        return {statusCode: 201}
+    if (!checkAction(payload.action)) {
+        return {statusCode: 201};
     }
+
     const user = payload.pull_request.user;
     const login = user.login;
-    logger.info(`Received action: ${action} for user: ${login}`);
+    logger.info(`Received action: ${payload.action} for user: ${login}`);
     const octokit = new Octokit({auth: process.env.NETLIFY_WEBHOOK_GITHUB_TOKEN});
     const pull_number = payload.number
     const starred_repo = await has_starred_repo(octokit, login);
     const no_file_outside_user_home = await contains_no_file_outside_user_home(octokit, login, pull_number);
     const headRepoOwner = payload.pull_request.head.repo.owner.login;
     const headRepoName = payload.pull_request.head.repo.name;
-    const max_size_and_file_count = below_max_size_and_file_count(octokit, headRepoOwner, headRepoName, `home/${login}`,
-        1024 * 1024, 999);
+    const max_size_and_file_count = below_max_size_and_file_count(octokit, headRepoOwner, headRepoName, `home/${login}`, 1024 * 1024, 999);
     const comment = formatComment(login, starred_repo, no_file_outside_user_home, max_size_and_file_count);
     await add_comment(octokit, pull_number, comment);
     const allChecksPassed = starred_repo && no_file_outside_user_home && max_size_and_file_count;
@@ -33,8 +36,27 @@ const handler = async (event, _) => {
     };
 }
 
+function checkSecret(event) {
+    const signature = Buffer.from(event.headers['x-hub-signature-256'], 'utf-8');
+    const sha = crypto.createHmac('sha256', process.env.NETLIFY_WEBHOOK_SECRET).update(event.body).digest('hex');
+    const digest = Buffer.from(`sha256=${sha}`, 'utf-8');
+    return signature.length === digest.length && crypto.timingSafeEqual(digest, signature);
+}
+
+function checkMethod(event) {
+    const method = event.httpMethod;
+    return method === 'POST';
+}
+
+function checkAction(action) {
+    return action === 'opened' || action === 'reopened';
+}
+
 function formatComment(login, starred_repo, no_file_outside_user_home, max_size_and_file_count) {
     let result = '';
+    result += `Hi @${login} 👋\n\n`;
+    result += 'Thanks for your pull-request!\m';
+    result += 'Let me run just a few checks before merging...\n\n';
     if (starred_repo) {
         result += '✅  You\'ve starred the Sourceglobe repository\n';
     } else {
@@ -48,7 +70,15 @@ function formatComment(login, starred_repo, no_file_outside_user_home, max_size_
     if (max_size_and_file_count) {
         result += '✅  Number of files < 1000 and total size < 1048576 bytes\n';
     } else {
-        result += '❌  Number of files > 1000 or total size > 1048576 bytes\m';
+        result += '❌  Number of files > 1000 or total size > 1048576 bytes\n';
+    }
+    result += '\n';
+    if (starred_repo && no_file_outside_user_home && max_size_and_file_count) {
+        result += 'That all looks great!\n'
+        result += 'Let\'s merge that pull-request to the main branch 🚀\n';
+    } else {
+        result += 'Please fix the issues above and try again.\n'
+        result += 'Closing the pull-request now, until next time!\n';
     }
     return result;
 }
