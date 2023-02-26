@@ -1,7 +1,7 @@
 const {Octokit} = require("@octokit/rest");
-const {logger} = require("../logger");
-const {has_starred_repo, contains_no_file_outside_user_home, below_max_size_and_file_count} = require("../checks");
-const {add_comment, merge_pull_request, update_stats_gist, close_pull_request} = require("../github");
+const {logger} = require("../src/logger");
+const {has_starred_repo, contains_no_file_outside_user_home, below_max_size_and_file_count} = require("../src/checks");
+const {add_comment, merge_pull_request, update_stats_gist, close_pull_request} = require("../src/github");
 const crypto = require("crypto");
 
 const handler = async (event, _) => {
