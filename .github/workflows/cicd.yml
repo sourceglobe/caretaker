@@ -8,9 +8,16 @@ jobs:
     env:
       CI: true
     steps:
-    - uses: actions/checkout@v1
-    - uses: actions/setup-node@v1
+    - name: Checkout sources
+      uses: actions/checkout@v4
+
+    - name: Set up Node
+      uses: actions/setup-node@v4
       with:
-        node-version: 16.x
-    - run: yarn install
-    - run: yarn test
+        node-version: 22.x
+
+    - name: Install dependencies
+      run: yarn install
+
+    - name: Run unit-tests
+      run: yarn test
